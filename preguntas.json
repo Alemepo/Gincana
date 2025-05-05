@@ -1,0 +1,28 @@
+[
+    {
+      "titulo": "asdsssssssssssss",
+      "lat": 38.790753788294424,
+      "lng": 0.1772403717041016,
+      "pregunta": "asd",
+      "respuestas": {
+        "correcta": "f",
+        "incorrectas": [
+          "f",
+          "f"
+        ]
+      }
+    },
+    {
+      "titulo": "Mercadona",
+      "lat": 38.73212548425921,
+      "lng": 0.14368057250976565,
+      "pregunta": "De que color es el logo",
+      "respuestas": {
+        "correcta": "Verde",
+        "incorrectas": [
+          "rojo",
+          "Azul"
+        ]
+      }
+    }
+  ]
