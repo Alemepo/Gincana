@@ -1,20 +1,28 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gincana Geo</title>
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script defer src="script.js"></script>
+  <meta charset="UTF-8">
+  <!-- Diseño responsivo para móviles -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mapa de Preguntas Interactivas</title>
+  <!-- CSS de Leaflet para el mapa -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9/dist/leaflet.css"
+        integrity="sha256-sA+eHmJ3ELRkDkLgOCmqozMrB0NIv3ytH0sZJsVLMoY=" crossorigin=""/>
+  <!-- Archivo de estilos propio -->
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <!-- Contenedor del mapa -->
   <div id="map"></div>
+  <!-- Contenedor para mensajes (distancia) y preguntas -->
   <div id="info"></div>
-  <div id="question" class="hidden">
-    <p id="question-text"></p>
-    <ul id="answers"></ul>
-  </div>
+
+  <!-- Biblioteca Leaflet (JS) -->
+  <script src="https://unpkg.com/leaflet@1.9/dist/leaflet.js"
+          integrity="sha256-XQoYMqMTK8Lvdl4uAi/KTc+n7SAOds4nY+3D9u13XPs="
+          crossorigin=""></script>
+  <!-- Script principal de la página -->
+  <script src="script.js"></script>
 </body>
 </html>
+
