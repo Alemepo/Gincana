@@ -1,77 +1,177 @@
+// Variables globales
+let map;
+let userMarker;
 let puntos = [];
-fetch('preguntas.json')
-  .then(res => res.json())
-  .then(data => {
-    // Guardar puntos de interés con una marca de respuesta no entregada
-    puntos = data.map(p => ({ ...p, respondido: false }));
-  })
-  .catch(err => console.error('Error cargando preguntas:', err));
-const map = L.map('map').setView([0, 0], 2);
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '&copy; OpenStreetMap contributors'
-}).addTo(map);
-// Marcador que representará la posición del usuario
-let userMarker = L.marker([0, 0]).addTo(map);
-if ('geolocation' in navigator) {
-  navigator.geolocation.watchPosition(onPositionUpdate, onError, {
+let currentPosition = null;
+
+// Inicializar el mapa
+function initMap() {
+  // Crear mapa centrado temporalmente (visibilidad mundial)
+  map = L.map('map').setView([0, 0], 2);
+  // Capa de mapa (OpenStreetMap)
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap'
+  }).addTo(map);
+}
+
+// Cargar puntos (preguntas) desde preguntas.json
+async function cargarPuntos() {
+  try {
+    const response = await fetch('preguntas.json');
+    puntos = await response.json();
+    // Agregar propiedad 'respondida' a cada punto
+    puntos.forEach(p => p.respondida = false);
+  } catch (error) {
+    console.error('Error al cargar puntos:', error);
+  }
+}
+
+// Obtener ubicación del usuario continuamente
+function iniciarGeolocalizacion() {
+  if (!navigator.geolocation) {
+    alert('Geolocalización no es soportada por este navegador.');
+    return;
+  }
+  navigator.geolocation.watchPosition(onLocationFound, onLocationError, {
     enableHighAccuracy: true,
-    maximumAge: 1000,
+    maximumAge: 10000,
     timeout: 5000
   });
-} else {
-  alert('Geolocalización no soportada en este navegador.');
 }
-function onPositionUpdate(pos) {
-  const lat = pos.coords.latitude;
-  const lng = pos.coords.longitude;
-  // Mover el marcador del usuario y centrar el mapa aquí
-  userMarker.setLatLng([lat, lng]);
-  map.setView([lat, lng], 16); // zoom 16 para cercanía
 
-  // Calcular distancia al punto de interés más cercano
-  let distanciaMin = Infinity;
+// Función llamada cuando se obtiene la ubicación
+function onLocationFound(position) {
+  const lat = position.coords.latitude;
+  const lng = position.coords.longitude;
+  currentPosition = L.latLng(lat, lng);
+
+  // Actualizar marcador de usuario
+  if (!userMarker) {
+    // Primera vez: crear marcador en la ubicación del usuario
+    userMarker = L.marker([lat, lng]).addTo(map);
+    map.setView([lat, lng], 16);
+  } else {
+    // Actualizar marcador existente y centrar mapa
+    userMarker.setLatLng([lat, lng]);
+    map.panTo([lat, lng]);
+  }
+
+  // Verificar distancias con puntos de interés
+  verificarDistancias(lat, lng);
+}
+
+// Manejar errores de geolocalización
+function onLocationError(error) {
+  console.error('Error de Geolocalización:', error);
+}
+
+// Calcular distancias y mostrar mensajes o preguntas
+function verificarDistancias(lat, lng) {
+  const usuario = L.latLng(lat, lng);
+  let distanciaMinima = Infinity;
   let puntoCercano = null;
+  // Encontrar punto no respondido más cercano
   puntos.forEach(p => {
-    const d = L.latLng(lat, lng).distanceTo([p.lat, p.lng]); // en metros:contentReference[oaicite:6]{index=6}
-    if (d < distanciaMin) {
-      distanciaMin = d;
-      puntoCercano = p;
+    if (!p.respondida) {
+      const puntoCoord = L.latLng(p.lat, p.lng);
+      const dist = usuario.distanceTo(puntoCoord);
+      if (dist < distanciaMinima) {
+        distanciaMinima = dist;
+        puntoCercano = p;
+      }
     }
   });
 
-  const infoDiv = document.getElementById('info');
-  if (distanciaMin <= 500 && puntoCercano) {
-    infoDiv.textContent = `Estás a ${Math.round(distanciaMin)} metros de un punto de interés.`;
-  } else {
-    infoDiv.textContent = '';
-  }
+  const distanceMsg = document.getElementById('distanceMsg');
+  const questionPanel = document.getElementById('questionPanel');
 
-  // Si está muy cerca (<50 m) y la pregunta no ha sido respondida, mostrar la pregunta
-  if (puntoCercano && distanciaMin <= 50 && !puntoCercano.respondido) {
-    mostrarPregunta(puntoCercano);
+  if (puntoCercano) {
+    if (distanciaMinima < 50) {
+      // A menos de 50 m: mostrar pregunta
+      mostrarPregunta(puntoCercano);
+    } else if (distanciaMinima < 500) {
+      // Entre 50 m y 500 m: mostrar distancia
+      const metros = Math.round(distanciaMinima);
+      distanceMsg.textContent = `Estás a ${metros} metros de un punto de interés.`;
+      distanceMsg.style.display = 'block';
+      // Ocultar panel de pregunta si estaba visible
+      questionPanel.style.display = 'none';
+      // Ocultar feedback si estaba visible
+      document.getElementById('feedback').style.display = 'none';
+    } else {
+      // A más de 500 m: ocultar mensajes
+      distanceMsg.style.display = 'none';
+      questionPanel.style.display = 'none';
+      document.getElementById('feedback').style.display = 'none';
+    }
+  } else {
+    // No quedan puntos por responder
+    distanceMsg.style.display = 'none';
+    questionPanel.style.display = 'none';
+    document.getElementById('feedback').style.display = 'none';
   }
 }
-function mostrarPregunta(punto) {
-  const infoDiv = document.getElementById('info');
-  infoDiv.innerHTML = `<strong>${punto.pregunta}</strong><br>`;
-  // Mezclar respuestas: correcta + incorrectas
-  const opciones = [punto.respuestas.correcta, ...punto.respuestas.incorrectas];
-  opciones.sort(() => Math.random() - 0.5); // mezclar array
 
-  // Crear botones para cada respuesta
-  opciones.forEach(op => {
+// Mostrar pregunta y respuestas para un punto
+function mostrarPregunta(punto) {
+  const distanceMsg = document.getElementById('distanceMsg');
+  const questionPanel = document.getElementById('questionPanel');
+  const questionText = document.getElementById('questionText');
+  const answersContainer = document.getElementById('answersContainer');
+  const feedback = document.getElementById('feedback');
+
+  // Ocultar mensaje de distancia y limpiar feedback anterior
+  distanceMsg.style.display = 'none';
+  feedback.style.display = 'none';
+  feedback.textContent = '';
+
+  // Mostrar panel de pregunta
+  questionPanel.style.display = 'block';
+  questionText.textContent = punto.pregunta;
+  answersContainer.innerHTML = '';
+
+  // Preparar respuestas (correcta e incorrectas) y mezclar
+  let opciones = [];
+  opciones.push({ texto: punto.respuestas.correcta, correcta: true });
+  punto.respuestas.incorrectas.forEach(inc => {
+    opciones.push({ texto: inc, correcta: false });
+  });
+  // Mezclar array de opciones
+  opciones.sort(() => Math.random() - 0.5);
+
+  // Crear botones para respuestas
+  opciones.forEach(opcion => {
     const btn = document.createElement('button');
-    btn.textContent = op;
-    btn.onclick = () => {
-      if (op === punto.respuestas.correcta) {
-        alert('¡Respuesta correcta!');
+    btn.className = 'answerBtn';
+    btn.textContent = opcion.texto;
+    btn.onclick = function() {
+      // Al seleccionar una respuesta
+      if (opcion.correcta) {
+        feedback.textContent = '¡Respuesta correcta!';
+        feedback.className = 'correct';
       } else {
-        alert('Respuesta incorrecta.');
+        feedback.textContent = 'Respuesta incorrecta. La respuesta correcta es: ' + punto.respuestas.correcta;
+        feedback.className = 'incorrect';
       }
-      // Marcar como respondido y limpiar la pregunta
-      punto.respondido = true;
-      infoDiv.textContent = '';
+      feedback.style.display = 'block';
+      // Marcar el punto como respondido
+      punto.respondida = true;
+      // Después de 3 segundos, ocultar pregunta y actualizar distancias
+      setTimeout(() => {
+        questionPanel.style.display = 'none';
+        feedback.style.display = 'none';
+        // Verificar nuevamente distancias para actualizar el mensaje
+        verificarDistancias(currentPosition.lat, currentPosition.lng);
+      }, 3000);
     };
-    infoDiv.appendChild(btn);
+    answersContainer.appendChild(btn);
   });
 }
+
+// Iniciar aplicación al cargar el DOM
+document.addEventListener('DOMContentLoaded', () => {
+  initMap();
+  cargarPuntos();
+  iniciarGeolocalizacion();
+});
