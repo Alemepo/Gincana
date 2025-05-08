@@ -1,5 +1,20 @@
 [
   {
+    "titulo": "Instituto",
+    "lat": 38.7911217362028,
+    "lng": 0.17633914947509768,
+    "pregunta": "¿Este es el instituto IES La Mar?",
+    "respuestas": {
+      "correcta": "Sí",
+      "incorrectas": [
+        "No",
+        "Puede ser"
+      ]
+    }
+  }
+
+
+  {
     "titulo": "asdsssssssssssss",
     "lat": 38.790753788294424,
     "lng": 0.1772403717041016,
