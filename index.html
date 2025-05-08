@@ -1,27 +1,29 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <!-- Diseño responsivo para móviles -->
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Mapa de Preguntas Interactivas</title>
-  <!-- CSS de Leaflet para el mapa -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9/dist/leaflet.css"
-        integrity="sha256-sA+eHmJ3ELRkDkLgOCmqozMrB0NIv3ytH0sZJsVLMoY=" crossorigin=""/>
-  <!-- Archivo de estilos propio -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mapa Interactivo - Gincana</title>
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"/>
+  <!-- Hojas de estilo personalizada -->
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <!-- Contenedor del mapa -->
   <div id="map"></div>
-  <!-- Contenedor para mensajes (distancia) y preguntas -->
-  <div id="info"></div>
-
-  <!-- Biblioteca Leaflet (JS) -->
-  <script src="https://unpkg.com/leaflet@1.9/dist/leaflet.js"
-          integrity="sha256-XQoYMqMTK8Lvdl4uAi/KTc+n7SAOds4nY+3D9u13XPs="
-          crossorigin=""></script>
-  <!-- Script principal de la página -->
+  <!-- Panel inferior para mensajes y preguntas -->
+  <div id="infoPanel">
+    <p id="distanceMsg"></p>
+    <div id="questionPanel" style="display: none;">
+      <h3 id="questionText"></h3>
+      <div id="answersContainer"></div>
+      <div id="feedback" style="display: none; margin-top: 10px;"></div>
+    </div>
+  </div>
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+  <!-- Script personalizado -->
   <script src="script.js"></script>
 </body>
 </html>
