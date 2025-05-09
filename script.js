@@ -4,11 +4,20 @@ let userMarker;
 let puntos = [];
 let currentPosition = null;
 
+// Definir un icono personalizado azul con imagen externa
+const iconoAzul = L.icon({
+  iconUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon-2x-blue.png', // Icono azul oficial de Leaflet
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  shadowSize: [41, 41],
+  shadowAnchor: [12, 41],
+  popupAnchor: [1, -34]
+});
+
 // Inicializar el mapa
 function initMap() {
-  // Crear mapa centrado temporalmente (visibilidad mundial)
   map = L.map('map').setView([0, 0], 2);
-  // Capa de mapa (OpenStreetMap)
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '© OpenStreetMap'
@@ -20,7 +29,6 @@ async function cargarPuntos() {
   try {
     const response = await fetch('preguntas.json');
     puntos = await response.json();
-    // Agregar propiedad 'respondida' a cada punto
     puntos.forEach(p => p.respondida = false);
   } catch (error) {
     console.error('Error al cargar puntos:', error);
@@ -46,18 +54,15 @@ function onLocationFound(position) {
   const lng = position.coords.longitude;
   currentPosition = L.latLng(lat, lng);
 
-  // Actualizar marcador de usuario
+  // Crear o mover el marcador del usuario con icono azul
   if (!userMarker) {
-    // Primera vez: crear marcador en la ubicación del usuario
-    userMarker = L.marker([lat, lng]).addTo(map);
+    userMarker = L.marker([lat, lng], { icon: iconoAzul }).addTo(map);
     map.setView([lat, lng], 16);
   } else {
-    // Actualizar marcador existente y centrar mapa
     userMarker.setLatLng([lat, lng]);
     map.panTo([lat, lng]);
   }
 
-  // Verificar distancias con puntos de interés
   verificarDistancias(lat, lng);
 }
 
@@ -71,7 +76,7 @@ function verificarDistancias(lat, lng) {
   const usuario = L.latLng(lat, lng);
   let distanciaMinima = Infinity;
   let puntoCercano = null;
-  // Encontrar punto no respondido más cercano
+
   puntos.forEach(p => {
     if (!p.respondida) {
       const puntoCoord = L.latLng(p.lat, p.lng);
@@ -88,25 +93,19 @@ function verificarDistancias(lat, lng) {
 
   if (puntoCercano) {
     if (distanciaMinima < 50) {
-      // A menos de 50 m: mostrar pregunta
       mostrarPregunta(puntoCercano);
     } else if (distanciaMinima < 500) {
-      // Entre 50 m y 500 m: mostrar distancia
       const metros = Math.round(distanciaMinima);
       distanceMsg.textContent = `Estás a ${metros} metros de un punto de interés.`;
       distanceMsg.style.display = 'block';
-      // Ocultar panel de pregunta si estaba visible
       questionPanel.style.display = 'none';
-      // Ocultar feedback si estaba visible
       document.getElementById('feedback').style.display = 'none';
     } else {
-      // A más de 500 m: ocultar mensajes
       distanceMsg.style.display = 'none';
       questionPanel.style.display = 'none';
       document.getElementById('feedback').style.display = 'none';
     }
   } else {
-    // No quedan puntos por responder
     distanceMsg.style.display = 'none';
     questionPanel.style.display = 'none';
     document.getElementById('feedback').style.display = 'none';
@@ -121,32 +120,26 @@ function mostrarPregunta(punto) {
   const answersContainer = document.getElementById('answersContainer');
   const feedback = document.getElementById('feedback');
 
-  // Ocultar mensaje de distancia y limpiar feedback anterior
   distanceMsg.style.display = 'none';
   feedback.style.display = 'none';
   feedback.textContent = '';
 
-  // Mostrar panel de pregunta
   questionPanel.style.display = 'block';
   questionText.textContent = punto.pregunta;
   answersContainer.innerHTML = '';
 
-  // Preparar respuestas (correcta e incorrectas) y mezclar
   let opciones = [];
   opciones.push({ texto: punto.respuestas.correcta, correcta: true });
   punto.respuestas.incorrectas.forEach(inc => {
     opciones.push({ texto: inc, correcta: false });
   });
-  // Mezclar array de opciones
   opciones.sort(() => Math.random() - 0.5);
 
-  // Crear botones para respuestas
   opciones.forEach(opcion => {
     const btn = document.createElement('button');
     btn.className = 'answerBtn';
     btn.textContent = opcion.texto;
-    btn.onclick = function() {
-      // Al seleccionar una respuesta
+    btn.onclick = function () {
       if (opcion.correcta) {
         feedback.textContent = '¡Respuesta correcta!';
         feedback.className = 'correct';
@@ -155,13 +148,10 @@ function mostrarPregunta(punto) {
         feedback.className = 'incorrect';
       }
       feedback.style.display = 'block';
-      // Marcar el punto como respondido
       punto.respondida = true;
-      // Después de 3 segundos, ocultar pregunta y actualizar distancias
       setTimeout(() => {
         questionPanel.style.display = 'none';
         feedback.style.display = 'none';
-        // Verificar nuevamente distancias para actualizar el mensaje
         verificarDistancias(currentPosition.lat, currentPosition.lng);
       }, 3000);
     };
@@ -175,3 +165,4 @@ document.addEventListener('DOMContentLoaded', () => {
   cargarPuntos();
   iniciarGeolocalizacion();
 });
+
