@@ -4,10 +4,11 @@ let userMarker;
 let puntos = [];
 let currentPosition = null;
 
-// Definir un icono personalizado azul con imagen externa
+// Definir un icono personalizado azul con imagen externa (funcional)
 const iconoAzul = L.icon({
-  iconUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon-2x-blue.png', // Icono azul oficial de Leaflet
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png',
+  iconUrl: 'https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/images/marker-icon.png',
+  iconRetinaUrl: 'https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/images/marker-icon-2x.png',
+  shadowUrl: 'https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/images/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   shadowSize: [41, 41],
