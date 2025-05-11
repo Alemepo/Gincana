@@ -1,19 +1,23 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mapa Interactivo - Gincana</title>
   <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"/>
   <!-- Hoja de estilo personalizada -->
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <!-- Contenedor del mapa -->
   <div id="map"></div>
-  
-  <!-- Panel inferior para distancia y pregunta -->
+  <!-- Panel lateral de historial -->
+  <div id="historyPanel">
+    <h3>Historial</h3>
+    <ul id="historyList"></ul>
+  </div>
+  <!-- Panel inferior para distancia y preguntas -->
   <div id="infoPanel">
     <p id="distanceMsg"></p>
     <div id="questionPanel" style="display: none;">
@@ -22,25 +26,8 @@
       <div id="feedback" style="display: none; margin-top: 10px;"></div>
     </div>
   </div>
-  
-  <!-- Botón para ver la lista de preguntas contestadas -->
-  <button id="toggleAnsweredBtn">Ver preguntas contestadas</button>
-  
-  <!-- Panel con la lista de preguntas contestadas correctamente -->
-  <div id="answeredPanel" style="display: none;">
-    <div id="answeredHeader" style="display: flex; justify-content: space-between; align-items: center;">
-      <h3 style="margin: 0;">Preguntas contestadas:</h3>
-      <button id="closeAnsweredBtn">Cerrar</button>
-    </div>
-    <ul id="answeredList"></ul>
-  </div>
-  
-  <!-- Brújula (icono circular con flecha) -->
-  <div id="compass">
-    <div id="compassArrow"></div>
-  </div>
-  <p id="compassMsg" style="display: none;"></p>
-  
+  <!-- Flecha de brújula -->
+  <div id="compassArrow"></div>
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
   <!-- Script personalizado -->
