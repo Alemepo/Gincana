@@ -1,204 +1,302 @@
-// Lista de preguntas contestadas (IDs) en esta sesión (recuperar de localStorage)
-let preguntasContestadas = JSON.parse(localStorage.getItem("preguntasContestadas")) || [];
-let aciertos = 0;
+// Variables globales
+let map;
+let userMarker;
+let puntos = [];
+let currentPosition = null;
+let orientationReceived = false;
 
-// Inicializar el mapa Leaflet y capa base (OpenStreetMap)
-let mapa = L.map('map').fitWorld();
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '© OpenStreetMap',
-  maxZoom: 19
-}).addTo(mapa);
+// Inicializar el mapa con Leaflet
+function initMap() {
+  // Crear el mapa centrado temporalmente
+  map = L.map('map').setView([0, 0], 2);
+  // Añadir capa de mapa (OpenStreetMap)
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap'
+  }).addTo(map);
+}
 
-let usuarioMarcador;
-let circuloUsuario;
-let currentPreguntaId = null; // ID de la pregunta actualmente mostrada
+// Cargar puntos (preguntas) desde preguntas.json
+async function cargarPuntos() {
+  try {
+    const response = await fetch('preguntas.json');
+    puntos = await response.json();
+    // Agregar propiedad 'respondida' a cada punto
+    puntos.forEach(p => p.respondida = false);
+    // No añadimos marcadores de mapa para mantener los puntos ocultos
 
-let puntos = []; // Array de puntos de interés (preguntas) cargados
-
-// Cargar preguntas desde 'preguntas.json' y agregar marcadores (excluyendo ya contestadas)
-fetch('preguntas.json')
-  .then(response => response.json())
-  .then(data => {
-    data.forEach((q, index) => {
-      // Si esta pregunta ya fue contestada en esta sesión, la omitimos
-      if (!preguntasContestadas.includes(index)) {
-        let marker = L.marker([q.lat, q.lng]).addTo(mapa);
-        marker.bindPopup(q.titulo);
-        puntos.push({ id: index, latlng: L.latLng(q.lat, q.lng), data: q, marker: marker });
+    // Marcar como respondidos los puntos almacenados en localStorage
+    const respondidasLS = JSON.parse(localStorage.getItem('answered') || '[]');
+    puntos.forEach(p => {
+      if (respondidasLS.includes(p.titulo)) {
+        p.respondida = true;
       }
     });
-  })
-  .catch(err => console.error("Error cargando preguntas:", err));
-
-// Solicitar geolocalización continua y centrar el mapa cuando se obtenga la posición
-mapa.locate({ watch: true, setView: true, maxZoom: 18, enableHighAccuracy: true });
-mapa.on('locationfound', onLocationFound);
-mapa.on('locationerror', () => {
-  console.error("Geolocalización fallida.");
-});
-
-// Objeto para almacenar el punto más cercano en cada actualización
-let currentNearest = { punto: null, dist: Infinity };
-
-// Manejar nueva ubicación del usuario
-function onLocationFound(e) {
-  const userLatLng = e.latlng;
-
-  // Actualizar o crear marcador de usuario
-  if (!usuarioMarcador) {
-    usuarioMarcador = L.marker(userLatLng).addTo(mapa).bindPopup("Tú").openPopup();
-  } else {
-    usuarioMarcador.setLatLng(userLatLng);
+    // Llenar la lista de preguntas contestadas correctamente
+    const listaHTML = document.getElementById('answeredList');
+    listaHTML.innerHTML = '';
+    respondidasLS.forEach(titulo => {
+      const li = document.createElement('li');
+      li.textContent = titulo;
+      listaHTML.appendChild(li);
+    });
+  } catch (error) {
+    console.error('Error al cargar puntos:', error);
   }
-  // Actualizar o crear círculo de 50m alrededor del usuario
-  if (!circuloUsuario) {
-    circuloUsuario = L.circle(userLatLng, {
-      radius: 50,
-      color: 'blue',
-      fillColor: '#add8e6',
-      fillOpacity: 0.2
-    }).addTo(mapa);
+}
+
+// Obtener ubicación del usuario continuamente
+function iniciarGeolocalizacion() {
+  if (!navigator.geolocation) {
+    alert('Geolocalización no es soportada por este navegador.');
+    return;
+  }
+  navigator.geolocation.watchPosition(onLocationFound, onLocationError, {
+    enableHighAccuracy: true,
+    maximumAge: 10000,
+    timeout: 5000
+  });
+}
+
+// Función llamada cuando se obtiene la ubicación
+function onLocationFound(position) {
+  const lat = position.coords.latitude;
+  const lng = position.coords.longitude;
+  currentPosition = L.latLng(lat, lng);
+
+  // Crear o mover el marcador del usuario en el mapa
+  if (!userMarker) {
+    // Primera vez: crear marcador del usuario
+    userMarker = L.marker([lat, lng]).addTo(map);
+    map.setView([lat, lng], 16);
   } else {
-    circuloUsuario.setLatLng(userLatLng);
+    // Actualizar ubicación del marcador existente
+    userMarker.setLatLng([lat, lng]);
+    map.panTo([lat, lng]);
   }
 
-  // Calcular distancia al punto más cercano
-  currentNearest = { punto: null, dist: Infinity };
+  // Verificar distancias con los puntos de interés
+  verificarDistancias(lat, lng);
+}
+
+// Manejar errores de geolocalización
+function onLocationError(error) {
+  console.error('Error de Geolocalización:', error);
+}
+
+// Calcular distancias y mostrar mensajes o preguntas
+function verificarDistancias(lat, lng) {
+  const usuario = L.latLng(lat, lng);
+  let distanciaMinima = Infinity;
+  let puntoCercano = null;
+
+  // Encontrar el punto no respondido más cercano
   puntos.forEach(p => {
-    let d = userLatLng.distanceTo(p.latlng);
-    if (d < currentNearest.dist) {
-      currentNearest = { punto: p, dist: d };
+    if (!p.respondida) {
+      const puntoCoord = L.latLng(p.lat, p.lng);
+      const dist = usuario.distanceTo(puntoCoord);
+      if (dist < distanciaMinima) {
+        distanciaMinima = dist;
+        puntoCercano = p;
+      }
     }
   });
 
-  // Según la distancia, mostrar pregunta o mensaje
-  if (currentNearest.punto && currentNearest.dist <= 50) {
-    // Dentro de 50m: mostrar pregunta
-    hideMessage();
-    if (currentPreguntaId !== currentNearest.punto.id) {
-      showQuestion(currentNearest.punto);
+  const distanceMsg = document.getElementById('distanceMsg');
+  const questionPanel = document.getElementById('questionPanel');
+
+  if (puntoCercano) {
+    // Siempre mostrar la distancia al punto más cercano
+    const distMeters = distanciaMinima;
+    let distTexto;
+    if (distMeters >= 1000) {
+      const distKm = distMeters / 1000;
+      if (distKm >= 10) {
+        distTexto = Math.round(distKm) + ' km';
+      } else {
+        distTexto = (Math.round(distKm * 10) / 10).toString().replace('.', ',') + ' km';
+      }
+    } else {
+      const metros = Math.round(distMeters);
+      distTexto = metros + ' metros';
     }
-  } else if (currentNearest.punto && currentNearest.dist <= 500) {
-    // Entre 50m y 500m: mostrar mensaje de cercanía
-    showMessage(`¡Punto cercano: a ${Math.round(currentNearest.dist)} metros!`);
-    hideQuestion();
+    distanceMsg.textContent = `Estás a ${distTexto} del punto más cercano.`;
+    distanceMsg.style.display = 'block';
+    // Ocultar cualquier mensaje de feedback anterior
+    document.getElementById('feedback').style.display = 'none';
+
+    if (distanciaMinima < 50) {
+      // A menos de 50 m: mostrar pregunta
+      mostrarPregunta(puntoCercano);
+    } else {
+      // Más lejos: ocultar panel de pregunta
+      questionPanel.style.display = 'none';
+    }
   } else {
-    // Más de 500m: ocultar todo
-    hideMessage();
-    hideQuestion();
+    // No quedan puntos por responder: mostrar mensaje de finalización
+    distanceMsg.textContent = '¡Enhorabuena! Has respondido todas las preguntas.';
+    distanceMsg.style.display = 'block';
+    questionPanel.style.display = 'none';
+    document.getElementById('feedback').style.display = 'none';
   }
 }
 
-// Mostrar mensaje informativo
-function showMessage(msg) {
-  let msgDiv = document.getElementById('message');
-  msgDiv.textContent = msg;
-  msgDiv.classList.add('visible');
+// Mostrar pregunta y respuestas para un punto cercano
+function mostrarPregunta(punto) {
+  const distanceMsg = document.getElementById('distanceMsg');
+  const questionPanel = document.getElementById('questionPanel');
+  const questionText = document.getElementById('questionText');
+  const answersContainer = document.getElementById('answersContainer');
+  const feedback = document.getElementById('feedback');
+
+  // Limpiar feedback anterior
+  feedback.style.display = 'none';
+  feedback.textContent = '';
+
+  // Mostrar panel de pregunta
+  questionPanel.style.display = 'block';
+  questionText.textContent = punto.pregunta;
+  answersContainer.innerHTML = '';
+
+  // Preparar opciones de respuesta (mezclar aleatoriamente)
+  let opciones = [];
+  opciones.push({ texto: punto.respuestas.correcta, correcta: true });
+  punto.respuestas.incorrectas.forEach(inc => {
+    opciones.push({ texto: inc, correcta: false });
+  });
+  opciones.sort(() => Math.random() - 0.5);
+
+  // Crear botones para las respuestas
+  opciones.forEach(opcion => {
+    const btn = document.createElement('button');
+    btn.className = 'answerBtn';
+    btn.textContent = opcion.texto;
+    btn.onclick = function() {
+      // Al seleccionar una respuesta
+      if (opcion.correcta) {
+        feedback.textContent = '¡Respuesta correcta!';
+        feedback.className = 'correct';
+        // Guardar punto respondido correctamente en localStorage
+        let answered = JSON.parse(localStorage.getItem('answered') || '[]');
+        if (!answered.includes(punto.titulo)) {
+          answered.push(punto.titulo);
+          localStorage.setItem('answered', JSON.stringify(answered));
+        }
+        // Añadir esta pregunta a la lista de contestadas
+        const li = document.createElement('li');
+        li.textContent = punto.titulo;
+        document.getElementById('answeredList').appendChild(li);
+      } else {
+        feedback.textContent = 'Respuesta incorrecta. La respuesta correcta es: ' + punto.respuestas.correcta;
+        feedback.className = 'incorrect';
+      }
+      feedback.style.display = 'block';
+      // Marcar el punto como respondido (no se volverá a preguntar)
+      punto.respondida = true;
+      // Tras 3 segundos, ocultar pregunta y verificar distancias de nuevo
+      setTimeout(() => {
+        questionPanel.style.display = 'none';
+        feedback.style.display = 'none';
+        if (currentPosition) {
+          verificarDistancias(currentPosition.lat, currentPosition.lng);
+        }
+      }, 3000);
+    };
+    answersContainer.appendChild(btn);
+  });
 }
-// Ocultar mensaje
-function hideMessage() {
-  document.getElementById('message').classList.remove('visible');
-}
 
-// Mostrar la pregunta (y opciones) en pantalla
-function showQuestion(punto) {
-  currentPreguntaId = punto.id;
-  let box = document.getElementById('question-box');
-  let preguntaElem = document.getElementById('question-text');
-  let feedbackElem = document.getElementById('feedback');
-
-  // Establecer texto de la pregunta
-  preguntaElem.textContent = punto.data.pregunta;
-  feedbackElem.textContent = "";
-
-  // Preparar respuestas (mezclar orden)
-  let respuestas = [
-    punto.data.respuestas.correcta,
-    ...punto.data.respuestas.incorrectas
-  ];
-  shuffle(respuestas);
-
-  // Asignar texto a los botones de respuesta
-  document.getElementById('answer1').textContent = respuestas[0];
-  document.getElementById('answer2').textContent = respuestas[1];
-  document.getElementById('answer3').textContent = respuestas[2];
-
-  // Eventos de click en respuestas
-  document.getElementById('answer1').onclick = () => checkAnswer(punto, respuestas[0]);
-  document.getElementById('answer2').onclick = () => checkAnswer(punto, respuestas[1]);
-  document.getElementById('answer3').onclick = () => checkAnswer(punto, respuestas[2]);
-
-  // Mostrar cuadro de pregunta con animación
-  box.classList.add('visible');
-}
-
-// Ocultar cuadro de pregunta
-function hideQuestion() {
-  let box = document.getElementById('question-box');
-  box.classList.remove('visible');
-  currentPreguntaId = null;
-}
-
-// Procesar la respuesta seleccionada
-function checkAnswer(punto, respuestaSeleccionada) {
-  let feedbackElem = document.getElementById('feedback');
-  if (respuestaSeleccionada === punto.data.respuestas.correcta) {
-    // Respuesta correcta
-    feedbackElem.textContent = "¡Correcto!";
-    aciertos++;
-    document.getElementById('score').textContent = `Aciertos: ${aciertos}`;
-    // Registrar respuesta correcta (ocultar punto permanentemente)
-    preguntasContestadas.push(punto.id);
-    localStorage.setItem("preguntasContestadas", JSON.stringify(preguntasContestadas));
-    mapa.removeLayer(punto.marker);
-    // Eliminar punto del array activo
-    puntos = puntos.filter(p => p.id !== punto.id);
-    // Ocultar pregunta después de breve pausa para mostrar feedback
-    setTimeout(() => {
-      hideQuestion();
-      feedbackElem.textContent = "";
-    }, 1000);
+// Inicializar la brújula (orientación del dispositivo)
+function initCompass() {
+  // Configurar eventos de orientación para la brújula
+  if ('DeviceOrientationEvent' in window) {
+    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+      // Safari iOS: requiere permiso del usuario
+      const compassMsg = document.getElementById('compassMsg');
+      compassMsg.textContent = 'Toca para activar brújula';
+      compassMsg.style.display = 'block';
+      const compassElem = document.getElementById('compass');
+      compassElem.style.cursor = 'pointer';
+      compassElem.onclick = async () => {
+        try {
+          const permiso = await DeviceOrientationEvent.requestPermission();
+          if (permiso === 'granted') {
+            // Permiso otorgado: iniciar escucha de orientación
+            compassMsg.style.display = 'none';
+            compassElem.style.cursor = 'default';
+            window.addEventListener('deviceorientation', onOrientation, true);
+            // Si no se obtienen datos tras un tiempo, mostrar aviso
+            setTimeout(() => {
+              if (!orientationReceived) {
+                compassMsg.textContent = 'Brújula no disponible';
+                compassMsg.style.display = 'block';
+              }
+            }, 5000);
+          } else {
+            // Permiso denegado
+            compassMsg.textContent = 'Brújula no activada';
+          }
+        } catch (e) {
+          console.error('Error al solicitar permisos de orientación:', e);
+          compassMsg.textContent = 'Brújula no disponible';
+        }
+      };
+    } else {
+      // Otros navegadores (Chrome/Android)
+      window.addEventListener('deviceorientation', onOrientation, true);
+      // Verificar si se reciben datos; si no, avisar al usuario
+      setTimeout(() => {
+        if (!orientationReceived) {
+          const compassMsg = document.getElementById('compassMsg');
+          compassMsg.textContent = 'Brújula no disponible';
+          compassMsg.style.display = 'block';
+        }
+      }, 5000);
+    }
   } else {
-    // Respuesta incorrecta
-    feedbackElem.textContent = `Incorrecto. La respuesta correcta es: ${punto.data.respuestas.correcta}`;
+    // El dispositivo/navegador no soporta orientación
+    const compassMsg = document.getElementById('compassMsg');
+    compassMsg.textContent = 'Brújula no soportada';
+    compassMsg.style.display = 'block';
   }
 }
 
-// Función para mezclar aleatoriamente un array (Fisher–Yates)
-function shuffle(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    let j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
+// Manejar evento de orientación del dispositivo para actualizar la brújula
+function onOrientation(e) {
+  // Calcular rumbo (en grados) respecto al norte
+  let heading = e.alpha;
+  if (e.webkitCompassHeading !== undefined) {
+    // Usar webkitCompassHeading en Safari (valor absoluto)
+    heading = e.webkitCompassHeading;
   }
+  if (heading === null) return;
+  if (e.webkitCompassHeading === undefined && e.absolute === false) {
+    // No hay orientación absoluta disponible
+    const compassMsg = document.getElementById('compassMsg');
+    compassMsg.textContent = 'Brújula no disponible';
+    compassMsg.style.display = 'block';
+    window.removeEventListener('deviceorientation', onOrientation);
+    return;
+  }
+  orientationReceived = true;
+  // Ocultar mensaje de error si estaba visible
+  document.getElementById('compassMsg').style.display = 'none';
+  // Rotar la flecha de la brújula (invertir el ángulo para que apunte al norte)
+  document.getElementById('compassArrow').style.transform = `rotate(${-heading}deg)`;
 }
 
-// Actualizar la brújula según la orientación del dispositivo
-window.addEventListener('deviceorientation', (event) => {
-  if (!currentNearest.punto) return; // No hay objetivo
-  let heading;
-  if (event.webkitCompassHeading) {
-    // En iOS Safari
-    heading = event.webkitCompassHeading;
-  } else if (event.absolute && event.alpha != null) {
-    // En Android/otros navegadores
-    heading = event.alpha;
-  } else {
-    // Fallback
-    heading = event.alpha || 0;
-  }
-  // Calcular rumbo (bearing) desde el usuario al punto más cercano
-  let lat1 = usuarioMarcador.getLatLng().lat * Math.PI / 180;
-  let lon1 = usuarioMarcador.getLatLng().lng * Math.PI / 180;
-  let lat2 = currentNearest.punto.latlng.lat * Math.PI / 180;
-  let lon2 = currentNearest.punto.latlng.lng * Math.PI / 180;
-  let y = Math.sin(lon2 - lon1) * Math.cos(lat2);
-  let x = Math.cos(lat1) * Math.sin(lat2) -
-          Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
-  let bearing = Math.atan2(y, x) * 180 / Math.PI;
-  bearing = (bearing + 360) % 360;
-  // Rotar flecha: diferencia entre rumbo y orientación del dispositivo
-  let angle = bearing - heading;
-  document.getElementById('compass').style.transform = `translateX(-50%) rotate(${angle}deg)`;
+// Iniciar la aplicación una vez cargado el DOM
+document.addEventListener('DOMContentLoaded', async () => {
+  initMap();
+  await cargarPuntos();
+  iniciarGeolocalizacion();
+  initCompass();
+  // Eventos para mostrar/ocultar la lista de preguntas contestadas
+  document.getElementById('toggleAnsweredBtn').onclick = () => {
+    document.getElementById('answeredPanel').style.display = 'block';
+  };
+  document.getElementById('closeAnsweredBtn').onclick = () => {
+    document.getElementById('answeredPanel').style.display = 'none';
+  };
 });
-
 
