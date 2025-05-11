@@ -50,5 +50,18 @@
         "ies esparrago"
       ]
     }
+  },
+  {
+    "titulo": "casa",
+    "lat": 38.72919615262285,
+    "lng": 0.10336697101593019,
+    "pregunta": "de quien es",
+    "respuestas": {
+      "correcta": "Alex",
+      "incorrectas": [
+        "pablo",
+        "jose"
+      ]
+    }
   }
 ]
