@@ -1,38 +1,51 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Mapa con Preguntas</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mapa Interactivo - Gincana</title>
   <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <!-- Estilos personalizados -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+  <!-- Hoja de estilo personalizada -->
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <!-- Contenedor del mapa -->
   <div id="map"></div>
-  <!-- Flecha de orientación (brújula) -->
-  <div id="compass"></div>
-  <!-- Mensaje de proximidad -->
-  <div id="message"></div>
-  <!-- Cuadro de pregunta -->
-  <div id="question-box">
-    <p id="question-text"></p>
-    <div id="answers">
-      <button id="answer1"></button>
-      <button id="answer2"></button>
-      <button id="answer3"></button>
+  
+  <!-- Panel inferior para distancia y pregunta -->
+  <div id="infoPanel">
+    <p id="distanceMsg"></p>
+    <div id="questionPanel" style="display: none;">
+      <h3 id="questionText"></h3>
+      <div id="answersContainer"></div>
+      <div id="feedback" style="display: none; margin-top: 10px;"></div>
     </div>
-    <p id="feedback"></p>
   </div>
-  <!-- Contador de aciertos -->
-  <div id="score">Aciertos: 0</div>
-
-  <!-- Librería Leaflet JS -->
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <!-- Script de la aplicación -->
+  
+  <!-- Botón para ver la lista de preguntas contestadas -->
+  <button id="toggleAnsweredBtn">Ver preguntas contestadas</button>
+  
+  <!-- Panel con la lista de preguntas contestadas correctamente -->
+  <div id="answeredPanel" style="display: none;">
+    <div id="answeredHeader" style="display: flex; justify-content: space-between; align-items: center;">
+      <h3 style="margin: 0;">Preguntas contestadas:</h3>
+      <button id="closeAnsweredBtn">Cerrar</button>
+    </div>
+    <ul id="answeredList"></ul>
+  </div>
+  
+  <!-- Brújula (icono circular con flecha) -->
+  <div id="compass">
+    <div id="compassArrow"></div>
+  </div>
+  <p id="compassMsg" style="display: none;"></p>
+  
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+  <!-- Script personalizado -->
   <script src="script.js"></script>
 </body>
 </html>
+
 
