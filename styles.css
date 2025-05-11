@@ -1,109 +1,155 @@
-/* Estilos básicos para mapa y elementos overlay */
+/* Estilos generales */
 html, body {
   height: 100%;
   margin: 0;
   padding: 0;
 }
+body {
+  font-family: Arial, sans-serif;
+}
+
+/* Mapa ocupando toda la pantalla */
 #map {
-  height: 100%;
+  height: 100vh;
   width: 100%;
 }
 
-/* Flecha brújula (triángulo con borde) */
+/* Panel de información (distancia y preguntas) */
+#infoPanel {
+  position: absolute;
+  bottom: 20px;
+  left: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+  z-index: 1000;
+}
+
+/* Mensaje de distancia */
+#distanceMsg {
+  margin: 0;
+  font-size: 1.1em;
+  font-weight: bold;
+}
+
+/* Pregunta (texto) */
+#questionPanel h3 {
+  margin: 0 0 10px;
+  font-size: 1.2em;
+}
+
+/* Botones de respuestas */
+.answerBtn {
+  display: block;
+  width: 90%;
+  margin: 5px auto;
+  padding: 10px;
+  font-size: 1.1em;
+  border: 1px solid #555;
+  border-radius: 5px;
+  background-color: #f2f2f2;
+  cursor: pointer;
+}
+.answerBtn:hover {
+  background-color: #e0e0e0;
+}
+
+/* Feedback de respuesta */
+#feedback {
+  font-size: 1.1em;
+  font-weight: bold;
+}
+#feedback.correct {
+  color: green;
+}
+#feedback.incorrect {
+  color: red;
+}
+
+/* Botón para ver preguntas contestadas */
+#toggleAnsweredBtn {
+  position: absolute;
+  top: 60px;
+  left: 10px;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-radius: 5px;
+  padding: 8px 12px;
+  font-size: 0.9em;
+  cursor: pointer;
+}
+
+/* Panel de preguntas contestadas */
+#answeredPanel {
+  position: absolute;
+  top: 50px;
+  left: 10px;
+  right: 10px;
+  bottom: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  padding: 10px;
+  z-index: 1500;
+  display: none;
+  overflow-y: auto;
+  text-align: left;
+}
+#answeredPanel h3 {
+  margin: 0;
+}
+#answeredHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+#answeredPanel ul {
+  padding-left: 20px;
+  margin: 5px 0;
+}
+#answeredPanel li {
+  margin: 5px 0;
+}
+#answeredPanel button {
+  margin-left: 10px;
+  padding: 5px 10px;
+}
+
+/* Brújula */
 #compass {
   position: absolute;
   top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
+  right: 10px;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.8);
+  border: 2px solid #555;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  text-align: center;
+}
+#compassArrow {
   width: 0;
   height: 0;
-  border-left: 20px solid transparent;
-  border-right: 20px solid transparent;
-  border-bottom: 30px solid red; /* Color de la flecha */
-  transform-origin: 50% 20px;
-  pointer-events: none;
-  z-index: 1000;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 20px solid #333;
+  margin: 10px auto 0 auto;
+  /* Flecha (triángulo) apuntando hacia arriba (norte) */
+  transform-origin: 50% 100%;
 }
-
-/* Mensaje de proximidad */
-#message {
+#compassMsg {
   position: absolute;
-  top: 50px;
-  width: 100%;
-  text-align: center;
-  background: yellow;
-  color: black;
-  font-weight: bold;
-  padding: 5px;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.5s ease;
-  z-index: 900;
-}
-#message.visible {
-  opacity: 1;
-  visibility: visible;
-}
-
-/* Cuadro de pregunta (popup personalizado) */
-#question-box {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  max-width: 400px;
-  background: white;
-  border: 2px solid #333;
-  border-radius: 10px;
-  padding: 10px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.5);
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.5s ease;
-  z-index: 1000;
-}
-#question-box.visible {
-  opacity: 1;
-  visibility: visible;
-}
-#question-text {
-  font-size: 1.2em;
-  margin-bottom: 10px;
-}
-
-/* Botones de respuestas grandes y accesibles */
-#answers button {
-  display: block;
-  width: 100%;
-  margin: 5px 0;
-  padding: 10px;
-  font-size: 1.1em;
-  border: none;
-  border-radius: 5px;
-  background: #4682B4;
-  color: white;
-}
-#answers button:hover {
-  background: #5a9bd3;
-}
-
-/* Feedback de acierto/error */
-#feedback {
-  margin-top: 10px;
-  font-weight: bold;
-}
-
-/* Contador de aciertos fijo en pantalla */
-#score {
-  position: absolute;
-  top: 10px;
+  top: 80px;
   right: 10px;
-  background: rgba(255,255,255,0.8);
-  padding: 5px 10px;
-  border-radius: 5px;
-  font-weight: bold;
   z-index: 1000;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 5px;
+  padding: 2px 5px;
+  font-size: 0.8em;
+  display: none;
 }
 
   
