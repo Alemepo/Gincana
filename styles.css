@@ -7,13 +7,15 @@ html, body {
 body {
   font-family: Arial, sans-serif;
 }
-/* Mapa ocupando toda la pantalla */
+
+/* Mapa a pantalla completa */
 #map {
   height: 100vh;
   width: 100%;
 }
-/* Panel de información (distancia y preguntas) */
-#infoPanel {
+
+/* Panel de pregunta (inferior) */
+#questionPanel {
   position: absolute;
   bottom: 20px;
   left: 10px;
@@ -22,20 +24,34 @@ body {
   border-radius: 8px;
   padding: 10px;
   text-align: center;
-  z-index: 1000;
+  z-index: 1001;
 }
+
 /* Mensaje de distancia */
 #distanceMsg {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  font-weight: normal;
   margin: 0;
-  font-size: 1.1em;
-  font-weight: bold;
+  display: none;
+  text-align: center;
+  z-index: 1000;
 }
-/* Pregunta */
+
+/* Título de la pregunta */
 #questionPanel h3 {
   margin: 0 0 10px;
   font-size: 1.2em;
 }
-/* Respuestas */
+
+/* Botones de respuestas */
 .answerBtn {
   display: block;
   width: 90%;
@@ -50,27 +66,81 @@ body {
 .answerBtn:hover {
   background-color: #e0e0e0;
 }
+
 /* Feedback de respuesta */
 #feedback {
   font-size: 1.1em;
   font-weight: bold;
 }
-/* Historial de preguntas */
-#historyPanel {
+#feedback.correct {
+  color: green;
+}
+#feedback.incorrect {
+  color: red;
+}
+.correct {
+  color: green;
+}
+.incorrect {
+  color: red;
+}
+
+/* Brújula (círculo con flecha) */
+#compass {
   position: absolute;
-  top: 0;
-  right: 0;
-  width: 220px;
-  height: 100vh;
-  overflow-y: auto;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 10px;
-  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
+  top: 10px;
+  right: 10px;
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 2px solid #555;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
   z-index: 1000;
 }
+#arrow {
+  font-size: 24px;
+  color: #888;
+  transform-origin: 50% 50%;
+}
+
+/* Botón "Ver historial" */
+#historyBtn {
+  position: absolute;
+  bottom: 70px;
+  right: 10px;
+  padding: 8px 12px;
+  font-size: 1em;
+  border: none;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  cursor: pointer;
+  z-index: 1000;
+}
+#historyBtn:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+/* Panel de historial */
+#historyPanel {
+  position: absolute;
+  bottom: 0;
+  left: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  padding: 10px;
+  z-index: 1500;
+  max-height: 50vh;
+  overflow-y: auto;
+}
 #historyPanel h3 {
-  margin-top: 0;
-  font-size: 1.1em;
+  margin: 0 0 10px;
   text-align: center;
 }
 #historyList {
@@ -79,29 +149,17 @@ body {
   margin: 0;
 }
 #historyList li {
-  margin-bottom: 5px;
+  margin: 5px 0;
 }
-/* Brújula */
-#compassArrow {
+#closeHistory {
   position: absolute;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%) rotate(0deg);
-  transform-origin: 50% 100%;
-  width: 0;
-  height: 0;
-  border-left: 15px solid transparent;
-  border-right: 15px solid transparent;
-  border-bottom: 25px solid red;
-  display: none;
-  z-index: 1002;
-}
-/* Indicadores Correcto/Incorrecto */
-.correct {
-  color: green;
-}
-.incorrect {
-  color: red;
+  top: 5px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 1.5em;
+  line-height: 1;
+  color: #333;
+  cursor: pointer;
 }
 
-  
