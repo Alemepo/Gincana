@@ -6,20 +6,31 @@
   <title>Mapa Interactivo - Gincana</title>
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"/>
-  <!-- Hojas de estilo personalizada -->
+  <!-- Hoja de estilo personalizada -->
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- Contenedor del mapa -->
+  <!-- Mapa -->
   <div id="map"></div>
-  <!-- Panel inferior para mensajes y preguntas -->
-  <div id="infoPanel">
-    <p id="distanceMsg"></p>
-    <div id="questionPanel" style="display: none;">
-      <h3 id="questionText"></h3>
-      <div id="answersContainer"></div>
-      <div id="feedback" style="display: none; margin-top: 10px;"></div>
-    </div>
+  <!-- Mensaje de distancia -->
+  <p id="distanceMsg"></p>
+  <!-- Brújula -->
+  <div id="compass" title="Activar brújula">
+    <div id="arrow">▲</div>
+  </div>
+  <!-- Panel de pregunta -->
+  <div id="questionPanel" style="display: none;">
+    <h3 id="questionText"></h3>
+    <div id="answersContainer"></div>
+    <div id="feedback" style="display: none; margin-top: 10px;"></div>
+  </div>
+  <!-- Botón de historial -->
+  <button id="historyBtn">Ver historial</button>
+  <!-- Panel de historial -->
+  <div id="historyPanel" style="display: none;">
+    <h3>Historial</h3>
+    <ul id="historyList"></ul>
+    <button id="closeHistory">&times;</button>
   </div>
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
