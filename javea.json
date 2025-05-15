@@ -1,30 +1,22 @@
-{
-  "Javea": [
-    {
-      "titulo": "Clase",
-      "lat": 38.788512610020845,
-      "lng": 0.17822206020355225,
-      "pregunta": "Que clase es ",
-      "respuestas": {
-        "correcta": "DAW",
-        "incorrectas": [
-          "DAM",
-          "ASIR"
-        ]
-      }
-    },
-    {
-      "titulo": "Parking",
-      "lat": 38.783026443506756,
-      "lng": 0.17979383468627932,
-      "pregunta": "Que parking es",
-      "respuestas": {
-        "correcta": "mercadona",
-        "incorrectas": [
-          "aldy",
-          "lidl"
-        ]
-      }
+[
+  {
+    "titulo": "Clase",
+    "lat": 38.788512610020845,
+    "lng": 0.17822206020355225,
+    "pregunta": "Que clase es",
+    "respuestas": {
+      "correcta": "DAW",
+      "incorrectas": ["DAM", "ASIR"]
     }
-  ]
-}
+  },
+  {
+    "titulo": "Parking",
+    "lat": 38.783026443506756,
+    "lng": 0.17979383468627932,
+    "pregunta": "Que parking es",
+    "respuestas": {
+      "correcta": "mercadona",
+      "incorrectas": ["aldy", "lidl"]
+    }
+  }
+]
