@@ -10,27 +10,24 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- Mapa -->
+  <!-- Selector de localidad -->
+  <select id="locationSelect">
+    <option value="" disabled selected>Seleccione una localidad</option>
+    <option value="teulada.json">Teulada</option>
+    <option value="javea.json">Jávea</option>
+    <option value="denia.json">Dénia</option>
+  </select>
+
+  <!-- Contenedor del mapa -->
   <div id="map"></div>
-  <!-- Mensaje de distancia -->
-  <p id="distanceMsg"></p>
-  <!-- Brújula -->
-  <div id="compass" title="Activar brújula">
-    <div id="arrow">▲</div>
-  </div>
-  <!-- Panel de pregunta -->
-  <div id="questionPanel" style="display: none;">
-    <h3 id="questionText"></h3>
-    <div id="answersContainer"></div>
-    <div id="feedback" style="display: none; margin-top: 10px;"></div>
-  </div>
-  <!-- Botón de historial -->
-  <button id="historyBtn">Ver historial</button>
-  <!-- Panel de historial -->
-  <div id="historyPanel" style="display: none;">
-    <h3>Historial</h3>
-    <ul id="historyList"></ul>
-    <button id="closeHistory">&times;</button>
+  <!-- Panel inferior para mensajes y preguntas -->
+  <div id="infoPanel">
+    <p id="distanceMsg"></p>
+    <div id="questionPanel" style="display: none;">
+      <h3 id="questionText"></h3>
+      <div id="answersContainer"></div>
+      <div id="feedback" style="display: none; margin-top: 10px;"></div>
+    </div>
   </div>
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
@@ -38,5 +35,6 @@
   <script src="script.js"></script>
 </body>
 </html>
+
 
 
