@@ -4,31 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mapa Interactivo - Gincana</title>
+  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"/>
+  <!-- Hojas de estilo personalizada -->
   <link rel="stylesheet" href="styles.css">
-  <style>
-    #locationSelect {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 1001;
-      padding: 5px;
-      font-size: 16px;
-    }
-  </style>
 </head>
 <body>
-  <!-- Selector de localidad -->
-  <select id="locationSelect">
-    <option value="" disabled selected>Seleccione una localidad</option>
-    <option value="teulada.json">Teulada</option>
-    <option value="javea.json">Jávea</option>
-    <option value="denia.json">Dénia</option>
-  </select>
-
   <!-- Contenedor del mapa -->
   <div id="map"></div>
-
   <!-- Panel inferior para mensajes y preguntas -->
   <div id="infoPanel">
     <p id="distanceMsg"></p>
@@ -38,21 +21,13 @@
       <div id="feedback" style="display: none; margin-top: 10px;"></div>
     </div>
   </div>
-
-  <!-- Panel historial -->
-  <div id="historyPanel" style="display:none; position: absolute; right: 10px; top: 10px; z-index: 1001; background: white; padding: 10px; border-radius: 6px;">
-    <button id="closeHistory">Cerrar</button>
-    <ul id="historyList"></ul>
-  </div>
-  <button id="historyBtn" style="position:absolute; right:10px; bottom:10px; z-index:1001;">Ver historial</button>
-
-  <!-- Brújula -->
-  <div id="compass" style="position:absolute; bottom: 60px; right: 10px; z-index:1001; font-size: 30px;">🧭<span id="arrow" style="display:inline-block; transform:rotate(0deg);">↑</span></div>
-
+  <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+  <!-- Script personalizado -->
   <script src="script.js"></script>
 </body>
 </html>
+
 
 
 
