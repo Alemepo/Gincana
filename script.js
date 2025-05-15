@@ -52,6 +52,7 @@ async function cargarPuntos() {
     console.error('Error al cargar puntos:', error);
   }
 }
+
 // Iniciar geolocalización continua del usuario
 function iniciarGeolocalizacion() {
   if (!navigator.geolocation) {
@@ -64,25 +65,31 @@ function iniciarGeolocalizacion() {
     timeout: 5000
   });
 }
+
 // Al obtener la ubicación del usuario
 function onLocationFound(position) {
   const lat = position.coords.latitude;
   const lng = position.coords.longitude;
   currentPosition = L.latLng(lat, lng);
+
   // Crear o mover el marcador del usuario
-  if (!userMarker) { 
+  if (!userMarker) {
     userMarker = L.marker([lat, lng]).addTo(map);
     map.setView([lat, lng], 16);
   } else {
     userMarker.setLatLng([lat, lng]);
     map.panTo([lat, lng]);
   }
-// Verificar distancias a los puntos de interés
+
+  // Verificar distancias a los puntos de interés
   verificarDistancias(lat, lng);
 }
+
+// Manejar error de geolocalización
 function onLocationError(error) {
   console.error('Error de Geolocalización:', error);
-} 
+}
+
 // Verificar distancias y actualizar interfaz (mensaje de distancia o pregunta)
 function verificarDistancias(lat, lng) {
   const usuario = L.latLng(lat, lng);
@@ -109,7 +116,7 @@ function verificarDistancias(lat, lng) {
     if (distanciaMinima < 50) {
       // A menos de 50m: mostrar pregunta
       mostrarPregunta(puntoCercano);
-      } else {
+    } else {
       // Mostrar distancia al punto más cercano (m o km según distancia)
       if (distanciaMinima >= 1000) {
         const km = parseFloat((distanciaMinima / 1000).toFixed(1));
@@ -124,7 +131,7 @@ function verificarDistancias(lat, lng) {
     }
   } else {
     // No quedan puntos por responder
-  distanceMsgEl.style.display = 'none';
+    distanceMsgEl.style.display = 'none';
     questionPanelEl.style.display = 'none';
     feedbackEl.style.display = 'none';
     // Ocultar brújula si ya no hay objetivos
@@ -133,17 +140,20 @@ function verificarDistancias(lat, lng) {
     }
   }
 }
+
 // Mostrar pregunta y opciones de respuesta para un punto
 function mostrarPregunta(punto) {
   // Ocultar mensaje de distancia y limpiar feedback previo
   distanceMsgEl.style.display = 'none';
   feedbackEl.style.display = 'none';
   feedbackEl.textContent = '';
+
   // Mostrar panel de pregunta con la pregunta actual
   questionPanelEl.style.display = 'block';
   document.getElementById('questionText').textContent = punto.pregunta;
   const answersContainer = document.getElementById('answersContainer');
   answersContainer.innerHTML = '';
+
   // Preparar opciones (correcta + incorrectas) y mezclarlas aleatoriamente
   let opciones = [];
   opciones.push({ texto: punto.respuestas.correcta, correcta: true });
@@ -151,6 +161,7 @@ function mostrarPregunta(punto) {
     opciones.push({ texto: inc, correcta: false });
   });
   opciones.sort(() => Math.random() - 0.5);
+
   // Crear botones para cada respuesta
   opciones.forEach(opcion => {
     const btn = document.createElement('button');
@@ -192,6 +203,7 @@ function mostrarPregunta(punto) {
     answersContainer.appendChild(btn);
   });
 }
+
 // Actualizar la flecha de la brújula según la orientación del dispositivo
 function handleOrientation(event) {
   if (!currentNearest || !currentPosition) {
@@ -270,7 +282,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           alert('No se pudo activar la brújula sin permiso.');
         }
-        }).catch(error => {
+      }).catch(error => {
         console.error('Error al solicitar permiso de brújula:', error);
       });
     } else {
@@ -284,3 +296,4 @@ document.addEventListener('DOMContentLoaded', () => {
   cargarPuntos();
   iniciarGeolocalizacion();
 });
+
