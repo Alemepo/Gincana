@@ -1,0 +1,17 @@
+{
+  "Denia": [
+    {
+      "titulo": "Pizzeria",
+      "lat": 38.83796939284866,
+      "lng": 0.10183811187744142,
+      "pregunta": "¿Que pizzeria es?",
+      "respuestas": {
+        "correcta": "dominos",
+        "incorrectas": [
+          "eduardo",
+          "masymas"
+        ]
+      }
+    }
+  ]
+}
